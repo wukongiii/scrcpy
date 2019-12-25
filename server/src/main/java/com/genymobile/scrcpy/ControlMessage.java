@@ -15,6 +15,7 @@ public final class ControlMessage {
     public static final int TYPE_GET_CLIPBOARD = 7;
     public static final int TYPE_SET_CLIPBOARD = 8;
     public static final int TYPE_SET_SCREEN_POWER_MODE = 9;
+    public static final int TYPE_SWITCH_DISPLAY = 10;
 
     private int type;
     private String text;
@@ -25,6 +26,7 @@ public final class ControlMessage {
     private Position position;
     private int hScroll;
     private int vScroll;
+    private int displayId;
 
     private ControlMessage() {
     }
@@ -86,6 +88,13 @@ public final class ControlMessage {
         return msg;
     }
 
+    public static ControlMessage createSwitchDisplay(int displayId) {
+        ControlMessage msg = new ControlMessage();
+        msg.type = TYPE_SWITCH_DISPLAY;
+        msg.displayId = displayId;
+        return msg;
+    }
+
     public int getType() {
         return type;
     }
@@ -120,5 +129,9 @@ public final class ControlMessage {
 
     public int getVScroll() {
         return vScroll;
+    }
+
+    public int getDisplayId() {
+        return displayId;
     }
 }

@@ -25,7 +25,7 @@ public final class Device {
     private RotationListener rotationListener;
 
     public Device(Options options) {
-        screenInfo = computeScreenInfo(options.getCrop(), options.getMaxSize());
+        screenInfo = computeScreenInfo(options.getDisplayId(), options.getCrop(), options.getMaxSize());
         registerRotationWatcher(new IRotationWatcher.Stub() {
             @Override
             public void onRotationChanged(int rotation) throws RemoteException {
@@ -45,8 +45,8 @@ public final class Device {
         return screenInfo;
     }
 
-    private ScreenInfo computeScreenInfo(Rect crop, int maxSize) {
-        DisplayInfo displayInfo = serviceManager.getDisplayManager().getDisplayInfo();
+    private ScreenInfo computeScreenInfo(int displayId, Rect crop, int maxSize) {
+        DisplayInfo displayInfo = serviceManager.getDisplayManager().getDisplayInfo(displayId);
         boolean rotated = (displayInfo.getRotation() & 1) != 0;
         Size deviceSize = displayInfo.getSize();
         Rect contentRect = new Rect(0, 0, deviceSize.getWidth(), deviceSize.getHeight());

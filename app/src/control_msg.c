@@ -65,6 +65,9 @@ control_msg_serialize(const struct control_msg *msg, unsigned char *buf) {
         case CONTROL_MSG_TYPE_GET_CLIPBOARD:
             // no additional data
             return 1;
+        case CONTROL_MSG_TYPE_SWITCH_DISPLAY:
+            buffer_write32be(&buf[1], (uint32_t) msg->switch_display.displayindex);
+            return 4;
         default:
             LOGW("Unknown message type: %u", (unsigned) msg->type);
             return 0;
