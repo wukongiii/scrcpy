@@ -20,6 +20,9 @@ public final class SurfaceControl {
     public static final int POWER_MODE_OFF = 0;
     public static final int POWER_MODE_NORMAL = 2;
 
+    public static final int BUILT_IN_DISPLAY_ID_MAIN = 0;
+    public static final int BUILT_IN_DISPLAY_ID_HDMI = 1;
+
     static {
         try {
             CLASS = Class.forName("android.view.SurfaceControl");
@@ -91,23 +94,17 @@ public final class SurfaceControl {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 getBuiltInDisplayMethod = CLASS.getMethod("getBuiltInDisplay", int.class);
             } else {
-                getBuiltInDisplayMethod = CLASS.getMethod("getInternalDisplayToken");
+                getBuiltInDisplayMethod = CLASS.getMethod("getPhysicalDisplayToken", long.class);
             }
         }
         return getBuiltInDisplayMethod;
     }
 
-    public static IBinder getBuiltInDisplay() {
+    public static IBinder getBuiltInDisplay(int displayId) {
 
         try {
             Method method = getGetBuiltInDisplayMethod();
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                // call getBuiltInDisplay(0)
-                return (IBinder) method.invoke(null, 0);
-            }
-
-            // call getInternalDisplayToken()
-            return (IBinder) method.invoke(null);
+            return (IBinder) method.invoke(null, displayId);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             Ln.e("Could not invoke method", e);
             return null;

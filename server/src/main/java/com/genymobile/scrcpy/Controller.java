@@ -109,6 +109,10 @@ public class Controller {
             case ControlMessage.TYPE_ROTATE_DEVICE:
                 device.rotateDevice();
                 break;
+            case ControlMessage.TYPE_SWITCH_DISPLAY:
+                device.switchDisplay(msg.getDisplayId());
+                break;
+
             default:
                 // do nothing
         }

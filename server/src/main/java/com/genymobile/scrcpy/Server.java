@@ -79,7 +79,7 @@ public final class Server {
                     "The server version (" + clientVersion + ") does not match the client " + "(" + BuildConfig.VERSION_NAME + ")");
         }
 
-        if (args.length != 8) {
+        if (args.length != 9) {
             throw new IllegalArgumentException("Expecting 8 parameters");
         }
 
@@ -106,6 +106,9 @@ public final class Server {
 
         boolean control = Boolean.parseBoolean(args[7]);
         options.setControl(control);
+
+        int displayId = Integer.parseInt(args[8]);
+        options.setDisplayId(displayId);
 
         return options;
     }

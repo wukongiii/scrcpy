@@ -221,6 +221,16 @@ rotate_device(struct controller *controller) {
     }
 }
 
+static void
+switch_display(struct controller *controller, int32_t displayId) {
+    struct control_msg msg;
+    msg.type = CONTROL_MSG_TYPE_SWITCH_DISPLAY;
+    msg.switch_display_index.display_index = displayId;
+    if (!controller_push_msg(controller, &msg)) {
+        LOGW("Could not request 'switch display'");
+    }
+}
+
 void
 input_manager_process_text_input(struct input_manager *im,
                                  const SDL_TextInputEvent *event) {
@@ -403,6 +413,23 @@ input_manager_process_key(struct input_manager *im,
                     rotate_device(controller);
                 }
                 return;
+
+            case SDLK_0:
+            case SDLK_1:
+            case SDLK_2:
+            case SDLK_3:
+            case SDLK_4:
+            case SDLK_5:
+            case SDLK_6:
+            case SDLK_7:
+            case SDLK_8:
+            case SDLK_9:
+                if (control && cmd && !shift && !repeat && down) {
+                    switch_display(controller, keycode - SDLK_0);
+                }
+                return;
+
+            break;
         }
 
         return;

@@ -1,5 +1,6 @@
 package com.genymobile.scrcpy;
 
+import com.genymobile.scrcpy.wrappers.DisplayManager;
 import com.genymobile.scrcpy.wrappers.ServiceManager;
 import com.genymobile.scrcpy.wrappers.SurfaceControl;
 import com.genymobile.scrcpy.wrappers.WindowManager;
@@ -11,21 +12,26 @@ import android.os.RemoteException;
 import android.view.IRotationWatcher;
 import android.view.InputEvent;
 
+import java.util.Arrays;
+
 public final class Device {
 
     public static final int POWER_MODE_OFF = SurfaceControl.POWER_MODE_OFF;
     public static final int POWER_MODE_NORMAL = SurfaceControl.POWER_MODE_NORMAL;
 
-    public interface RotationListener {
+    public interface DisplayChangingListener {
         void onRotationChanged(int rotation);
+        void onDisplayChanged(int displayId);
     }
 
     private final ServiceManager serviceManager = new ServiceManager();
 
+    private Options options;
     private ScreenInfo screenInfo;
-    private RotationListener rotationListener;
+    private DisplayChangingListener displayChangingListener;
 
     public Device(Options options) {
+        this.options = options;
         screenInfo = computeScreenInfo(options.getDisplayId(), options.getCrop(), options.getMaxSize());
         registerRotationWatcher(new IRotationWatcher.Stub() {
             @Override
@@ -34,8 +40,8 @@ public final class Device {
                     screenInfo = screenInfo.withRotation(rotation);
 
                     // notify
-                    if (rotationListener != null) {
-                        rotationListener.onRotationChanged(rotation);
+                    if (displayChangingListener != null) {
+                        displayChangingListener.onRotationChanged(rotation);
                     }
                 }
             }
@@ -64,7 +70,7 @@ public final class Device {
         }
 
         Size videoSize = computeVideoSize(contentRect.width(), contentRect.height(), maxSize);
-        return new ScreenInfo(contentRect, videoSize, rotated);
+        return new ScreenInfo(displayId, contentRect, videoSize, rotated);
     }
 
     private static String formatCrop(Rect rect) {
@@ -133,8 +139,8 @@ public final class Device {
         serviceManager.getWindowManager().registerRotationWatcher(rotationWatcher);
     }
 
-    public synchronized void setRotationListener(RotationListener rotationListener) {
-        this.rotationListener = rotationListener;
+    public synchronized void setDisplayChangingListener(DisplayChangingListener displayChangingListener) {
+        this.displayChangingListener = displayChangingListener;
     }
 
     public void expandNotificationPanel() {
@@ -162,7 +168,7 @@ public final class Device {
      * @param mode one of the {@code SCREEN_POWER_MODE_*} constants
      */
     public void setScreenPowerMode(int mode) {
-        IBinder d = SurfaceControl.getBuiltInDisplay();
+        IBinder d = SurfaceControl.getBuiltInDisplay(SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN);
         if (d == null) {
             Ln.e("Could not get built-in display");
             return;
@@ -189,6 +195,19 @@ public final class Device {
         // restore auto-rotate if necessary
         if (accelerometerRotation) {
             wm.thawRotation();
+        }
+    }
+
+    public void switchDisplay(int displayId) {
+        DisplayManager displayManager = serviceManager.getDisplayManager();
+        int[] displayIds = displayManager.getDisplayIds();
+        if (displayIds == null || displayIds.length < 1 || !Arrays.asList(displayIds).contains(displayId)) {
+            return;
+        }
+
+        screenInfo = computeScreenInfo(displayId, options.getCrop(), options.getMaxSize());
+        if (displayChangingListener != null) {
+            displayChangingListener.onDisplayChanged(displayId);
         }
     }
 

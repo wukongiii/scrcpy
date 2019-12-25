@@ -68,7 +68,7 @@ struct control_msg {
             enum screen_power_mode mode;
         } set_screen_power_mode;
         struct {
-            int32_t displayindex;
+            int32_t display_index;
         } switch_display_index;
     };
 };

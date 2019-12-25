@@ -131,6 +131,16 @@ convert_keycode(SDL_Keycode from, enum android_keycode *to, uint16_t mod,
         MAP(SDLK_y,            AKEYCODE_Y);
         MAP(SDLK_z,            AKEYCODE_Z);
         MAP(SDLK_SPACE,        AKEYCODE_SPACE);
+        MAP(SDLK_0,            AKEYCODE_0);
+        MAP(SDLK_1,            AKEYCODE_1);
+        MAP(SDLK_2,            AKEYCODE_2);
+        MAP(SDLK_3,            AKEYCODE_3);
+        MAP(SDLK_4,            AKEYCODE_4);
+        MAP(SDLK_5,            AKEYCODE_5);
+        MAP(SDLK_6,            AKEYCODE_6);
+        MAP(SDLK_7,            AKEYCODE_7);
+        MAP(SDLK_8,            AKEYCODE_8);
+        MAP(SDLK_9,            AKEYCODE_9);
         FAIL;
     }
 }

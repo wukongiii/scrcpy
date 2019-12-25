@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ScreenEncoder implements Device.RotationListener {
+public class ScreenEncoder implements Device.DisplayChangingListener {
 
     private static final int DEFAULT_I_FRAME_INTERVAL = 10; // seconds
     private static final int REPEAT_FRAME_DELAY_US = 100_000; // repeat after 100ms
@@ -23,6 +23,7 @@ public class ScreenEncoder implements Device.RotationListener {
     private static final int NO_PTS = -1;
 
     private final AtomicBoolean rotationChanged = new AtomicBoolean();
+    private final AtomicBoolean displayChanged = new AtomicBoolean();
     private final ByteBuffer headerBuffer = ByteBuffer.allocate(12);
 
     private int bitRate;
@@ -47,8 +48,21 @@ public class ScreenEncoder implements Device.RotationListener {
         rotationChanged.set(true);
     }
 
+    @Override
+    public void onDisplayChanged(int displayId) {
+        displayChanged.set(true);
+    }
+
     public boolean consumeRotationChange() {
         return rotationChanged.getAndSet(false);
+    }
+
+    public boolean consumeDisplayChange() {
+        return displayChanged.getAndSet(false);
+    }
+
+    public boolean needToRestartEncoding() {
+        return consumeRotationChange() || consumeDisplayChange();
     }
 
     public void streamScreen(Device device, FileDescriptor fd) throws IOException {
@@ -56,12 +70,12 @@ public class ScreenEncoder implements Device.RotationListener {
         Workarounds.fillAppInfo();
 
         MediaFormat format = createFormat(bitRate, maxFps, iFrameInterval);
-        device.setRotationListener(this);
+        device.setDisplayChangingListener(this);
         boolean alive;
         try {
             do {
                 MediaCodec codec = createCodec();
-                IBinder display = createDisplay();
+                IBinder display = getDisplay(device.getScreenInfo().getDisplayId());
                 Rect contentRect = device.getScreenInfo().getContentRect();
                 Rect videoRect = device.getScreenInfo().getVideoSize().toRect();
                 setSize(format, videoRect.width(), videoRect.height());
@@ -80,7 +94,7 @@ public class ScreenEncoder implements Device.RotationListener {
                 }
             } while (alive);
         } finally {
-            device.setRotationListener(null);
+            device.setDisplayChangingListener(null);
         }
     }
 
@@ -88,11 +102,11 @@ public class ScreenEncoder implements Device.RotationListener {
         boolean eof = false;
         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
 
-        while (!consumeRotationChange() && !eof) {
+        while (!needToRestartEncoding() && !eof) {
             int outputBufferId = codec.dequeueOutputBuffer(bufferInfo, -1);
             eof = (bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0;
             try {
-                if (consumeRotationChange()) {
+                if (needToRestartEncoding()) {
                     // must restart encoding with new size
                     break;
                 }
@@ -161,6 +175,10 @@ public class ScreenEncoder implements Device.RotationListener {
 
     private static IBinder createDisplay() {
         return SurfaceControl.createDisplay("scrcpy", true);
+    }
+
+    private static IBinder getDisplay(int displayId) {
+        return SurfaceControl.getBuiltInDisplay(displayId);
     }
 
     private static void configure(MediaCodec codec, MediaFormat format) {
