@@ -94,7 +94,8 @@ public final class SurfaceControl {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 getBuiltInDisplayMethod = CLASS.getMethod("getBuiltInDisplay", int.class);
             } else {
-                getBuiltInDisplayMethod = CLASS.getMethod("getPhysicalDisplayToken", long.class);
+                //getBuiltInDisplayMethod = CLASS.getMethod("getPhysicalDisplayToken", long.class);
+                getBuiltInDisplayMethod = CLASS.getMethod("getInternalDisplayToken");
             }
         }
         return getBuiltInDisplayMethod;
@@ -102,9 +103,14 @@ public final class SurfaceControl {
 
     public static IBinder getBuiltInDisplay(int displayId) {
 
+        Ln.e("Getting display " + displayId);
         try {
             Method method = getGetBuiltInDisplayMethod();
-            return (IBinder) method.invoke(null, displayId);
+            if (method == null) {
+                Ln.e("getGetBuiltInDisplayMethod is null");
+                return null;
+            }
+            return (IBinder) method.invoke(null, 0);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             Ln.e("Could not invoke method", e);
             return null;

@@ -32,6 +32,7 @@ struct scrcpy_options {
     bool render_expired_frames;
     bool prefer_text;
     bool window_borderless;
+    uint16_t display_id;
 };
 
 #define SCRCPY_OPTIONS_DEFAULT { \
@@ -58,6 +59,7 @@ struct scrcpy_options {
     .render_expired_frames = false, \
     .prefer_text = false, \
     .window_borderless = false, \
+    .display_id = 0, \
 }
 
 bool

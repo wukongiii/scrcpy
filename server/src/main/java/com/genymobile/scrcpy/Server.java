@@ -80,7 +80,7 @@ public final class Server {
         }
 
         if (args.length != 9) {
-            throw new IllegalArgumentException("Expecting 8 parameters");
+            throw new IllegalArgumentException("Expecting 9 parameters");
         }
 
         Options options = new Options();

@@ -75,7 +75,15 @@ public class ScreenEncoder implements Device.DisplayChangingListener {
         try {
             do {
                 MediaCodec codec = createCodec();
-                IBinder display = getDisplay(device.getScreenInfo().getDisplayId());
+//                IBinder display = getDisplay(device.getScreenInfo().getDisplayId());
+//                if (display == null) {
+//                    Ln.e("Display " + device.getScreenInfo().getDisplayId() +" can't access. Using main display.");
+//                    display = createDisplay();
+//                } else {
+//                    Ln.e("Got display");
+//                }
+                IBinder display = createDisplay();
+
                 Rect contentRect = device.getScreenInfo().getContentRect();
                 Rect videoRect = device.getScreenInfo().getVideoSize().toRect();
                 setSize(format, videoRect.width(), videoRect.height());

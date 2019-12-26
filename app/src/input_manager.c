@@ -225,7 +225,7 @@ static void
 switch_display(struct controller *controller, int32_t displayId) {
     struct control_msg msg;
     msg.type = CONTROL_MSG_TYPE_SWITCH_DISPLAY;
-    msg.switch_display_index.display_index = displayId;
+    msg.switch_display.display_index = displayId;
     if (!controller_push_msg(controller, &msg)) {
         LOGW("Could not request 'switch display'");
     }

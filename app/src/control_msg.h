@@ -69,7 +69,7 @@ struct control_msg {
         } set_screen_power_mode;
         struct {
             int32_t display_index;
-        } switch_display_index;
+        } switch_display;
     };
 };
 
