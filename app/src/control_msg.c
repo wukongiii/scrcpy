@@ -82,8 +82,9 @@ control_msg_serialize(const struct control_msg *msg, unsigned char *buf) {
             // no additional data
             return 1;
         case CONTROL_MSG_TYPE_SWITCH_DISPLAY:
-            buffer_write32be(&buf[1], (uint32_t) msg->switch_display.display_index);
-            return 4;
+            //buffer_write32be(&buf[1], msg->switch_display.display_index);
+            buf[1] = msg->switch_display.display_index;
+            return 2;
         default:
             LOGW("Unknown message type: %u", (unsigned) msg->type);
             return 0;

@@ -32,7 +32,14 @@ public final class Device {
 
     public Device(Options options) {
         this.options = options;
-        screenInfo = computeScreenInfo(options.getDisplayId(), options.getCrop(), options.getMaxSize());
+
+        int displayId = getDisplayId(options.getDisplayIndex());
+        if (displayId < 0) {
+            Ln.e("Display index is not available, using default.");
+            displayId = 0;
+        }
+        Ln.i("Using display id: " + displayId);
+        screenInfo = computeScreenInfo(displayId, options.getCrop(), options.getMaxSize());
         registerRotationWatcher(new IRotationWatcher.Stub() {
             @Override
             public void onRotationChanged(int rotation) throws RemoteException {
@@ -46,6 +53,24 @@ public final class Device {
                 }
             }
         });
+    }
+
+    private int getDisplayId(int displayIndex) {
+        DisplayManager displayManager = serviceManager.getDisplayManager();
+        int[] displayIds = displayManager.getDisplayIds();
+
+        if (displayIds == null) {
+            Ln.e("Couldn't get display ids.");
+            return -1;
+        }
+
+        Ln.i("Display ids:" + Arrays.toString(displayIds));
+
+        if (displayIndex >= displayIds.length) {
+            Ln.e("Illegal display index:" + displayIndex);
+            return -1;
+        }
+        return displayIds[displayIndex];
     }
 
     public synchronized ScreenInfo getScreenInfo() {
@@ -127,8 +152,10 @@ public final class Device {
         return Build.MODEL;
     }
 
-    public boolean injectInputEvent(InputEvent inputEvent, int mode) {
-        return serviceManager.getInputManager().injectInputEvent(inputEvent, mode);
+
+    public boolean injectInputEvent(InputEvent inputEvent) {
+        int displayId = screenInfo.getDisplayId();
+        return serviceManager.getInputManager().dispatchEvent(inputEvent, displayId);
     }
 
     public boolean isScreenOn() {
@@ -198,12 +225,13 @@ public final class Device {
         }
     }
 
-    public void switchDisplay(int displayId) {
-        DisplayManager displayManager = serviceManager.getDisplayManager();
-        int[] displayIds = displayManager.getDisplayIds();
-        if (displayIds == null || displayIds.length < 1 || !Arrays.asList(displayIds).contains(displayId)) {
+    public void switchDisplay(int displayIndex) {
+        int displayId = getDisplayId(displayIndex);
+        if (displayId < 0) {
+            Ln.e("Failed switch display to index: " + displayIndex);
             return;
         }
+        Ln.e("Switching display to:" + displayId);
 
         screenInfo = computeScreenInfo(displayId, options.getCrop(), options.getMaxSize());
         if (displayChangingListener != null) {

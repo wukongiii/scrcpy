@@ -102,15 +102,18 @@ public final class SurfaceControl {
     }
 
     public static IBinder getBuiltInDisplay(int displayId) {
-
-        Ln.e("Getting display " + displayId);
         try {
             Method method = getGetBuiltInDisplayMethod();
             if (method == null) {
                 Ln.e("getGetBuiltInDisplayMethod is null");
                 return null;
             }
-            return (IBinder) method.invoke(null, 0);
+            if (displayId != 0) {
+                displayId = 1;
+            }
+            IBinder display = (IBinder) method.invoke(null, displayId);
+            Ln.i("Using built-in display id:" + displayId + ", Got display:" + display);
+            return display;
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             Ln.e("Could not invoke method", e);
             return null;
@@ -136,6 +139,25 @@ public final class SurfaceControl {
     public static void destroyDisplay(IBinder displayToken) {
         try {
             CLASS.getMethod("destroyDisplay", IBinder.class).invoke(null, displayToken);
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+
+    private static Method screenshotMothod = null;
+    private static boolean isScreenshotMethodInited = false;
+    public static void screenshot(IBinder display, Surface consumer) {
+        if (!isScreenshotMethodInited) {
+            isScreenshotMethodInited = true;
+            try {
+                screenshotMothod = CLASS.getMethod("screenshot", IBinder.class, Surface.class);
+            } catch (Exception e) {
+                throw new AssertionError(e);
+            }
+        }
+        try {
+            screenshotMothod.invoke(null, display, consumer);
         } catch (Exception e) {
             throw new AssertionError(e);
         }

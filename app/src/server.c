@@ -17,6 +17,7 @@
 
 #define DEFAULT_SERVER_PATH PREFIX "/share/scrcpy/" SERVER_FILENAME
 #define DEVICE_SERVER_PATH "/data/local/tmp/scrcpy-server.jar"
+#define CLASS_PATH DEVICE_SERVER_PATH//";/system/framework/services.jar"
 
 static const char *
 get_server_path(void) {
@@ -119,25 +120,32 @@ disable_tunnel(struct server *server) {
     return disable_tunnel_reverse(server->serial);
 }
 
+static bool
+enable_root(struct server *server) {
+    process_t process = adb_root(server->serial);
+    return process_check_success(process, "adb root");
+}
+
 static process_t
 execute_server(struct server *server, const struct server_params *params) {
     char max_size_string[6];
     char bit_rate_string[11];
     char max_fps_string[6];
-    char display_id_string[6];
+    char display_index_string[6];
     sprintf(max_size_string, "%"PRIu16, params->max_size);
     sprintf(bit_rate_string, "%"PRIu32, params->bit_rate);
     sprintf(max_fps_string, "%"PRIu16, params->max_fps);
-    sprintf(display_id_string, "%"PRIu16, params->display_id);
+    sprintf(display_index_string, "%"PRIu16, params->display_index);
     const char *const cmd[] = {
         "shell",
-        "CLASSPATH=" DEVICE_SERVER_PATH,
+        "CLASSPATH=" CLASS_PATH,
         "app_process",
 #ifdef SERVER_DEBUGGER
 # define SERVER_DEBUGGER_PORT "5005"
         "-agentlib:jdwp=transport=dt_socket,suspend=y,server=y,address="
             SERVER_DEBUGGER_PORT,
 #endif
+        //"--nice-name=scrcpy-server", //--setuid=1000 --setuid=1000
         "/", // unused
         "com.genymobile.scrcpy.Server",
         SCRCPY_VERSION,
@@ -148,9 +156,18 @@ execute_server(struct server *server, const struct server_params *params) {
         params->crop ? params->crop : "-",
         "true", // always send frame meta (packet boundaries + timestamp)
         params->control ? "true" : "false",
-        display_id_string,
-
+        display_index_string
     };
+
+    /*
+    char cmdStr[200];
+    for (int i = 0; i < sizeof(cmd) / sizeof(cmd[0]); i++) {
+        strcat(cmdStr, cmd[i]);
+        strcat(cmdStr, " ");
+    }
+    LOGE("CMD:%s", cmdStr);
+    */
+
 #ifdef SERVER_DEBUGGER
     LOGI("Server debugger waiting for a client on device port "
          SERVER_DEBUGGER_PORT "...");
@@ -234,6 +251,10 @@ server_start(struct server *server, const char *serial,
         }
     }
 
+    if (!enable_root(server)) {
+        LOGW("Could not root the device, event could not be routed.");
+    }
+
     if (!push_server(serial)) {
         SDL_free(server->serial);
         return false;
@@ -262,6 +283,8 @@ server_start(struct server *server, const char *serial,
             return false;
         }
     }
+
+
 
     // server will connect to our server socket
     server->process = execute_server(server, params);

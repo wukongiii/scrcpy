@@ -222,10 +222,10 @@ rotate_device(struct controller *controller) {
 }
 
 static void
-switch_display(struct controller *controller, int32_t displayId) {
+switch_display(struct controller *controller, char displayIndex) {
     struct control_msg msg;
     msg.type = CONTROL_MSG_TYPE_SWITCH_DISPLAY;
-    msg.switch_display.display_index = displayId;
+    msg.switch_display.display_index = displayIndex;
     if (!controller_push_msg(controller, &msg)) {
         LOGW("Could not request 'switch display'");
     }
@@ -424,7 +424,7 @@ input_manager_process_key(struct input_manager *im,
             case SDLK_7:
             case SDLK_8:
             case SDLK_9:
-                if (control && cmd && !shift && !repeat && down) {
+                if (control && ctrl && !meta && !shift && !repeat) {
                     switch_display(controller, keycode - SDLK_0);
                 }
                 return;

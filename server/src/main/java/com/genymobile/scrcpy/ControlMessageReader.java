@@ -13,6 +13,7 @@ public class ControlMessageReader {
     private static final int INJECT_TOUCH_EVENT_PAYLOAD_LENGTH = 21;
     private static final int INJECT_SCROLL_EVENT_PAYLOAD_LENGTH = 20;
     private static final int SET_SCREEN_POWER_MODE_PAYLOAD_LENGTH = 1;
+    private static final int SWITCH_DISPLAY_PAYLOAD_LENGTH = 1;
 
     public static final int TEXT_MAX_LENGTH = 300;
     public static final int CLIPBOARD_TEXT_MAX_LENGTH = 4093;
@@ -78,6 +79,9 @@ public class ControlMessageReader {
             case ControlMessage.TYPE_GET_CLIPBOARD:
             case ControlMessage.TYPE_ROTATE_DEVICE:
                 msg = ControlMessage.createEmpty(type);
+                break;
+            case ControlMessage.TYPE_SWITCH_DISPLAY:
+                msg = parseSwitchDisplay();
                 break;
             default:
                 Ln.w("Unknown event type: " + type);
@@ -162,6 +166,14 @@ public class ControlMessageReader {
         }
         int mode = buffer.get();
         return ControlMessage.createSetScreenPowerMode(mode);
+    }
+
+    private ControlMessage parseSwitchDisplay() {
+        if (buffer.remaining() < SWITCH_DISPLAY_PAYLOAD_LENGTH) {
+            return null;
+        }
+        int display_id = buffer.get();
+        return ControlMessage.createSwitchDisplay(display_id);
     }
 
     private static Position readPosition(ByteBuffer buffer) {

@@ -141,6 +141,12 @@ adb_reverse_remove(const char *serial, const char *device_socket_name) {
 }
 
 process_t
+adb_root(const char *serial) {
+    const char *const adb_cmd[] = {"root"};
+    return adb_execute(serial, adb_cmd, ARRAY_LEN(adb_cmd));
+}
+
+process_t
 adb_push(const char *serial, const char *local, const char *remote) {
 #ifdef __WINDOWS__
     // Windows will parse the string, so the paths must be quoted

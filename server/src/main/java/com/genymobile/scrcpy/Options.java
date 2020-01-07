@@ -10,7 +10,7 @@ public class Options {
     private Rect crop;
     private boolean sendFrameMeta; // send PTS so that the client may record properly
     private boolean control;
-    private int displayId;
+    private int displayIndex;
 
     public int getMaxSize() {
         return maxSize;
@@ -68,12 +68,12 @@ public class Options {
         this.control = control;
     }
 
-    public void setDisplayId(int displayId) {
-        this.displayId = displayId;
+    public void setDisplayIndex(int displayIndex) {
+        this.displayIndex = displayIndex;
     }
 
-    public int getDisplayId() {
-        return displayId;
+    public int getDisplayIndex() {
+        return displayIndex;
     }
 
 

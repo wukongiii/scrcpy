@@ -29,7 +29,7 @@ public final class ControlMessage {
     private Position position;
     private int hScroll;
     private int vScroll;
-    private int displayId;
+    private int displayIndex;
 
     private ControlMessage() {
     }
@@ -93,10 +93,10 @@ public final class ControlMessage {
         return msg;
     }
 
-    public static ControlMessage createSwitchDisplay(int displayId) {
+    public static ControlMessage createSwitchDisplay(int displayIndex) {
         ControlMessage msg = new ControlMessage();
         msg.type = TYPE_SWITCH_DISPLAY;
-        msg.displayId = displayId;
+        msg.displayIndex = displayIndex;
         return msg;
     }
 
@@ -144,7 +144,7 @@ public final class ControlMessage {
         return vScroll;
     }
 
-    public int getDisplayId() {
-        return displayId;
+    public int getDisplayIndex() {
+        return displayIndex;
     }
 }

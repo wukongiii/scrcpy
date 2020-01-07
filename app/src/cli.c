@@ -38,8 +38,8 @@ scrcpy_print_usage(const char *arg0) {
         "    -f, --fullscreen\n"
         "        Start in fullscreen.\n"
         "\n"
-        "    -d, --display-id id\n"
-        "        Select which display to connect.\n"
+        "    -d, --display-index index\n"
+        "        Select display to connect.\n"
         "\n"
         "    -h, --help\n"
         "        Print this help.\n"
@@ -173,7 +173,7 @@ scrcpy_print_usage(const char *arg0) {
         "        rotate device screen\n"
         "\n"
         "    " CTRL_OR_CMD "+0-9\n"
-        "        switch display to 0-9\n"
+        "        switch display index to 0-9\n"
         "\n"
         "    " CTRL_OR_CMD "+n\n"
         "       expand notification panel\n"
@@ -334,14 +334,14 @@ guess_record_format(const char *filename) {
 }
 
 static bool
-parse_display_id(const char *s, uint16_t *display_id) {
+parse_display_index(const char *s, uint16_t *display_index) {
     long value;
-    bool ok = parse_integer_arg(s, &value, false, 0, 0xFFFF, "display id");
+    bool ok = parse_integer_arg(s, &value, false, 0, 0xFFFF, "display index");
     if (!ok) {
         return false;
     }
 
-    *display_id = (uint16_t) value;
+    *display_index = (uint16_t) value;
     return true;
 }
 
@@ -389,7 +389,7 @@ scrcpy_parse_args(struct scrcpy_cli_args *args, int argc, char *argv[]) {
         {"window-height",         required_argument, NULL, OPT_WINDOW_HEIGHT},
         {"window-borderless",     no_argument,       NULL,
                                                      OPT_WINDOW_BORDERLESS},
-        {"display-id",            required_argument, NULL, 'd'},
+        {"display-index",            required_argument, NULL, 'd'},
         {NULL,                    0,                 NULL, 0  },
     };
 
@@ -398,7 +398,7 @@ scrcpy_parse_args(struct scrcpy_cli_args *args, int argc, char *argv[]) {
     optind = 0; // reset to start from the first argument in tests
 
     int c;
-    while ((c = getopt_long(argc, argv, "b:c:fF:hm:nNp:r:s:StTv:d", long_options,
+    while ((c = getopt_long(argc, argv, "b:c:fF:hm:nNp:r:s:StTvd:", long_options,
                             NULL)) != -1) {
         switch (c) {
             case 'b':
@@ -504,7 +504,7 @@ scrcpy_parse_args(struct scrcpy_cli_args *args, int argc, char *argv[]) {
                 opts->prefer_text = true;
                 break;
             case 'd':
-                if (!parse_display_id(optarg, &opts->display_id)) {
+                if (!parse_display_index(optarg, &opts->display_index)) {
                     return false;
                 }
                 break;

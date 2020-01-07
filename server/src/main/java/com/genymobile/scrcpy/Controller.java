@@ -1,7 +1,5 @@
 package com.genymobile.scrcpy;
 
-import com.genymobile.scrcpy.wrappers.InputManager;
-
 import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.InputEvent;
@@ -110,7 +108,7 @@ public class Controller {
                 device.rotateDevice();
                 break;
             case ControlMessage.TYPE_SWITCH_DISPLAY:
-                device.switchDisplay(msg.getDisplayId());
+                device.switchDisplay(msg.getDisplayIndex());
                 break;
 
             default:
@@ -224,7 +222,7 @@ public class Controller {
     }
 
     private boolean injectEvent(InputEvent event) {
-        return device.injectInputEvent(event, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+        return device.injectInputEvent(event);
     }
 
     private boolean pressBackOrTurnScreenOn() {

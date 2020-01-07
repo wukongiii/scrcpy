@@ -75,24 +75,23 @@ public class ScreenEncoder implements Device.DisplayChangingListener {
         try {
             do {
                 MediaCodec codec = createCodec();
-//                IBinder display = getDisplay(device.getScreenInfo().getDisplayId());
-//                if (display == null) {
-//                    Ln.e("Display " + device.getScreenInfo().getDisplayId() +" can't access. Using main display.");
-//                    display = createDisplay();
-//                } else {
-//                    Ln.e("Got display");
-//                }
-                IBinder display = createDisplay();
+                IBinder display = getDisplay(device.getScreenInfo().getDisplayId());
+                if (display == null) {
+                    Ln.e("Display " + device.getScreenInfo().getDisplayId() +" can't access. Using main display.");
+                    display = getDisplay(0);
+                }
+//                IBinder display = createDisplay();
+//                Ln.i("Got display:" + display);
 
                 Rect contentRect = device.getScreenInfo().getContentRect();
                 Rect videoRect = device.getScreenInfo().getVideoSize().toRect();
                 setSize(format, videoRect.width(), videoRect.height());
                 configure(codec, format);
                 Surface surface = codec.createInputSurface();
-                setDisplaySurface(display, surface, contentRect, videoRect);
+                //setDisplaySurface(display, surface, contentRect, videoRect);
                 codec.start();
                 try {
-                    alive = encode(codec, fd);
+                    alive = encode(display, surface, codec, fd);
                     // do not call stop() on exception, it would trigger an IllegalStateException
                     codec.stop();
                 } finally {
@@ -106,11 +105,14 @@ public class ScreenEncoder implements Device.DisplayChangingListener {
         }
     }
 
-    private boolean encode(MediaCodec codec, FileDescriptor fd) throws IOException {
+    private boolean encode(IBinder display, Surface surface, MediaCodec codec, FileDescriptor fd) throws IOException {
         boolean eof = false;
         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
 
         while (!needToRestartEncoding() && !eof) {
+
+            SurfaceControl.screenshot(display, surface);
+
             int outputBufferId = codec.dequeueOutputBuffer(bufferInfo, -1);
             eof = (bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0;
             try {

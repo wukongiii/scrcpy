@@ -20,7 +20,13 @@ public final class DisplayManager {
             int width = cls.getDeclaredField("logicalWidth").getInt(displayInfo);
             int height = cls.getDeclaredField("logicalHeight").getInt(displayInfo);
             int rotation = cls.getDeclaredField("rotation").getInt(displayInfo);
-            return new DisplayInfo(new Size(width, height), rotation);
+            //int type, String name, int ownerUid, String ownerPackageName
+            int type = cls.getDeclaredField("type").getInt(displayInfo);
+            String name = cls.getDeclaredField("name").get(displayInfo).toString();
+            int ownerUid = cls.getDeclaredField("ownerUid").getInt(displayInfo);
+
+            Object ownerPackageName = cls.getDeclaredField("ownerPackageName").get(displayInfo);
+            return new DisplayInfo(new Size(width, height), rotation, type, name,ownerUid, ownerPackageName != null ? ownerPackageName.toString() : null);
         } catch (Exception e) {
             throw new AssertionError(e);
         }

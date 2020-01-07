@@ -70,6 +70,9 @@ process_t
 adb_reverse_remove(const char *serial, const char *device_socket_name);
 
 process_t
+adb_root(const char *serial);
+
+process_t
 adb_push(const char *serial, const char *local, const char *remote);
 
 process_t
